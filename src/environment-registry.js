@@ -15,6 +15,7 @@ class EnvironmentRegistry {
             search: new Search(),
             sydney: new Sydney(),
             web: new WebBrowser(),
+            movie_maker: new MovieMaker(),
         };
     }
 
