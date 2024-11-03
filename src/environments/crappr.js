@@ -111,7 +111,9 @@ create <description> - Create a video from text description
 help - Show this help message
 
 Example usage:
-crappr create "an old lady laughing underwater, wearing a scuba diving suit"`,
+crappr create "man eating whole wheel of cheese, doppleganger style"
+
+You will be returned a URL to the video, which you can then use in a tweet. Pornographic or NSFW content will fail to be generated, but you can otherwise generate anything you want.`,
         };
     }
 }
