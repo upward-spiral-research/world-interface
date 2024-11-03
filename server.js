@@ -9,9 +9,11 @@ const globalState = require("./src/global-state");
 const app = express();
 app.use(bodyParser.json());
 
-const environmentRegistry = new EnvironmentRegistry();
-const commandHandler = new CommandHandler(environmentRegistry);
 const worldInterfaceKey = process.env.WORLD_INTERFACE_KEY;
+const solanaRpcUrl = process.env.SOLANA_RPC_URL;
+
+const environmentRegistry = new EnvironmentRegistry({ solanaRpcUrl });
+const commandHandler = new CommandHandler(environmentRegistry);
 
 // Bearer token authentication middleware
 const authenticateToken = (req, res, next) => {
