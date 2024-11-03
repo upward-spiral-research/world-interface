@@ -12,7 +12,7 @@ class MovieMaker {
                 name: "create",
                 description: "Create a video from text description",
             },
-            { name: "help", description: "Show Movie Maker help" },
+            { name: "help", description: "Show Crappr help" },
         ];
     }
 
@@ -105,13 +105,13 @@ class MovieMaker {
 
     help() {
         return {
-            title: "Movie Maker Help",
+            title: "Crappr Help",
             content: `Available commands:
 create <description> - Create a video from text description
 help - Show this help message
 
 Example usage:
-movie_maker create "an old lady laughing underwater, wearing a scuba diving suit"`,
+crappr create "an old lady laughing underwater, wearing a scuba diving suit"`,
         };
     }
 }
