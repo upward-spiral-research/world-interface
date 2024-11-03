@@ -4,10 +4,12 @@ const MemeMagic = require("./environments/meme_magic");
 const Search = require("./environments/search");
 const Sydney = require("./environments/sydney");
 const WebBrowser = require("./environments/web_browser");
+const Sol = require("./environments/sol");
 
 class EnvironmentRegistry {
-    constructor() {
+    constructor({ solanaRpcUrl }) {
         this.environments = {
+            sol: new Sol({ solanaRpcUrl }),
             twitter: new Twitter(),
             exo: new Exo(),
             meme: new MemeMagic(),
