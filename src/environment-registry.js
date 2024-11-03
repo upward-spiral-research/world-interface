@@ -4,6 +4,7 @@ const MemeMagic = require("./environments/meme_magic");
 const Search = require("./environments/search");
 const Sydney = require("./environments/sydney");
 const WebBrowser = require("./environments/web_browser");
+const MovieMaker = require("./environments/movie_maker");
 
 class EnvironmentRegistry {
     constructor() {
