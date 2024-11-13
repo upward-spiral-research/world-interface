@@ -138,4 +138,6 @@ qa/myenv
 qa/conversation_*
 qa/qa_outputs/
 qa_outputs/
+qa/test.py
 SCRATCH.md
+qa/test.py
