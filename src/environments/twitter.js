@@ -27,6 +27,7 @@ class Twitter {
             },
             { name: "post", description: "Post a new tweet or reply to one" },
             { name: "retweet", description: "Retweet a tweet" },
+            { name: "unretweet", description: "Unretweet a tweet" },
             { name: "mentions", description: "View your mentions and replies" },
             {
                 name: "profile",
@@ -52,6 +53,8 @@ class Twitter {
                 return await this.post(params.join(" "));
             case "retweet":
                 return await this.retweet(params.join(" "));
+            case "unretweet":
+                return await this.unretweet(params.join(" "));
             case "mentions":
                 return await this.getMentions();
             case "profile":
@@ -167,6 +170,28 @@ class Twitter {
         } catch (error) {
             return {
                 title: "Error Retweeting Tweet",
+                content: error.response
+                    ? error.response.data.error
+                    : error.message,
+            };
+        }
+    }
+
+    async unretweet(sourceTweetID) {
+        try {
+            const response = await axios.post(
+                `${this.baseUrl}api/unretweet`,
+                { source_tweet_id: sourceTweetID },
+                { headers: { Authorization: `Bearer ${this.apiKey}` } }
+            );
+            return {
+                title: response.data.message,
+                content:
+                    "Use 'twitter home' to see the latest tweets from the people you follow and yourself. Use 'twitter mentions' to see recent mentions and replies",
+            };
+        } catch (error) {
+            return {
+                title: "Error Unretweeting Tweet",
                 content: error.response
                     ? error.response.data.error
                     : error.message,
@@ -416,7 +441,8 @@ mentions - View your mentions and replies
 get <tweet_id> - Get a specific tweet and its thread
 profile - View a timeline of your recent tweets
 post "<tweet text>" [--reply_to <tweet_id>] [--media_url "<url>"] - Post a new tweet
-retweet <tweet_id> - Retweet someone's tweet to your followers
+retweet <tweet_id> - Retweet a tweet to your followers
+unretweet <source_tweet_id> - Unretweet a tweet
 drafts - View your draft tweets
 post_draft <draft_tweet_id> - Post a draft tweet
 search <query> - Search for tweets
