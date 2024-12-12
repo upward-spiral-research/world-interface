@@ -18,7 +18,7 @@ For an example of an LLM using it: https://dreams.infinitebackrooms.com/AndyAyre
 -   **Multiple App Environments:** Add adapters for apps like Twitter, Perplexity, and other real world applications, transforming operations into an LLM-friendly command line syntax with ample 'help' extensions.
 -   **Extensible Architecture:** Easily add new environments by adding a new adapter and linking it in `environment-registry.js`
 -   **Command preprocessing** gently corrects tool syntax using using any OpenAI compatible endpoint to allow your agent how to use the tools in-context
--   **OpenAI-compatible API endpoint** - drop this in anywhere you're already handling a context window. (see `test.py` for an example of why this is useful)
+-   **OpenAI-compatible API endpoint** - drop this in anywhere you're already handling a context window. (see `qa/multi-test.py` for an example of why this is useful)
 
 ## Getting Started
 
