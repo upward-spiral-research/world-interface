@@ -16,6 +16,7 @@ class Twitter {
     constructor() {
         this.baseUrl = process.env.TWITTER_PROXY_BASE_URL; // You'll need an instance of https://github.com/upward-spiral-research/x-proxy running for this environment to work
         this.apiKey = process.env.TWITTER_PROXY_API_KEY;
+        this.twitterUserName = process.env.TWITTER_USER_NAME;
     }
 
     getCommands() {
@@ -204,7 +205,7 @@ class Twitter {
             const response = await axios.get(
                 `${this.baseUrl}api/search_tweets`,
                 {
-                    params: { query: "from:truth_terminal" }, // Empty query to get recent tweets
+                    params: { query: `from:${this.twitterUserName}` }, // Query to get recent tweets and retweets. Note: will be limited to the last 7 days only
                     headers: { Authorization: `Bearer ${this.apiKey}` },
                 }
             );
