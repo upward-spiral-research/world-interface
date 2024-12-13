@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { response } = require("express");
 
 function formatTweet(tweet) {
     const metrics = tweet?.public_metrics || {};
@@ -40,6 +41,7 @@ class Twitter {
             { name: "post_draft", description: "Post a draft tweet" },
             { name: "get", description: "Get a specific tweet" },
             { name: "search", description: "Search for tweets" },
+            { name: "user_lookup", description: "Lookup a user" },
             { name: "follow", description: "Follow a user" },
             { name: "unfollow", description: "Unfollow a user" },
             { name: "help", description: "Show Twitter help" },
@@ -74,6 +76,8 @@ class Twitter {
                 return await this.getTweet(params[0]);
             case "search":
                 return await this.searchTweets(params.join(" "));
+            case "user_lookup":
+                return await this.userLookup(params.join(" "));
             case "follow":
                 return await this.followUser(params.join(" "));
             case "unfollow":
@@ -450,6 +454,70 @@ class Twitter {
         }
     }
 
+    async userLookup(userName) {
+        try {
+            const response = await axios.get(
+                `${this.baseUrl}api/get_user_profile`,
+                {
+                    params: { username: userName },
+                    headers: { Authorization: `Bearer ${this.apiKey}` },
+                }
+            );
+
+            const profile = response.data;
+            console.log(profile);
+            return {
+                title: `${profile.name} (@${profile.username}) ${
+                    profile.verified
+                        ? `- verified ${profile.verified_type} account`
+                        : ""
+                }`,
+                content: `${
+                    profile.description
+                        ? `Bio:
+${profile.description}
+`
+                        : ""
+                }
+Location: ${profile.location}
+Link: ${profile.url}
+Followers: ${profile.public_metrics.followers_count}
+Following: ${profile.public_metrics.following_count}
+${
+    profile.pinned_tweet
+        ? `
+Pinned Tweet:
+${formatTweet(profile.pinned_tweet).replace(
+    "(@undefined):",
+    `(@${profile.username}):`
+)}`
+        : ""
+}
+${
+    profile.most_recent_tweet
+        ? `Most Recent Tweet:
+${formatTweet(profile.most_recent_tweet).replace(
+    "(@undefined):",
+    `(@${profile.username}):`
+)}`
+        : ""
+}
+Use 'twitter search from:${
+                    profile.username
+                }' to see their recent tweets. Use 'twitter follow ${
+                    profile.username
+                }' to follow this account.`,
+            };
+        } catch (error) {
+            return {
+                title: "Error Looking-Up User",
+                content: error.response
+                    ? error.response.data.error
+                    : error.message,
+            };
+        }
+    }
+
     async followUser(userName) {
         try {
             const response = await axios.post(
@@ -510,6 +578,7 @@ unlike <tweet_id> - Unlike a tweet
 drafts - View your draft tweets
 post_draft <draft_tweet_id> - Post a draft tweet
 search <query> - Search for tweets
+user_lookup <user_name> - View a user's profile, their pinned tweet, and their most recent tweet
 follow <user_name> - Follow a user
 unfollow <user_name> - Unfollow a user
 help - Show this help message
