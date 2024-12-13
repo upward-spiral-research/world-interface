@@ -1,5 +1,4 @@
 const axios = require("axios");
-const { response } = require("express");
 
 function formatTweet(tweet) {
     const metrics = tweet?.public_metrics || {};
