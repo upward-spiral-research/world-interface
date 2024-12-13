@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 import requests
 import time
 import re
@@ -6,7 +8,9 @@ import sys
 import termios
 import tty
 import json
-import os
+
+# Load environment variables from .env file if it exists, otherwise Replit should still load its secrets
+load_dotenv()
 
 def escape_chars(text):
     return re.sub(r'\\n', '\n', text)
@@ -31,7 +35,7 @@ API_CONFIG = {
     "player1": {
         "base_url": "https://app.openpipe.ai/api/v1/chat/completions", # any openai compatible endpoint will work here, i use openpipe for finetunings
         "api_key": os.getenv("OPENPIPE_API_KEY"),
-        "model": "openpipe:model-name", # replace with your model name
+        "model": os.getenv("OPENPIPE_MODEL_NAME"), # note this should be in the format "openpipe:<model_name>"
         "temperature":0.75
     },
     "player2": {

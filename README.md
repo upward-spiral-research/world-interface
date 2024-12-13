@@ -18,7 +18,7 @@ For an example of an LLM using it: https://dreams.infinitebackrooms.com/AndyAyre
 -   **Multiple App Environments:** Add adapters for apps like Twitter, Perplexity, and other real world applications, transforming operations into an LLM-friendly command line syntax with ample 'help' extensions.
 -   **Extensible Architecture:** Easily add new environments by adding a new adapter and linking it in `environment-registry.js`
 -   **Command preprocessing** gently corrects tool syntax using using any OpenAI compatible endpoint to allow your agent how to use the tools in-context
--   **OpenAI-compatible API endpoint** - drop this in anywhere you're already handling a context window. (see `test.py` for an example of why this is useful)
+-   **OpenAI-compatible API endpoint** - drop this in anywhere you're already handling a context window. (see `qa/multi-test.py` for an example of why this is useful)
 
 ## Getting Started
 
@@ -155,7 +155,7 @@ To add a new environment:
 
 ## Current Environments
 
--   Twitter: Connects to a Twitter proxy we're working on. Still to be released!
+-   Twitter: Connects to our Twitter proxy repo. See: https://github.com/upward-spiral-research/x-proxy
 -   Exo: A suite of tools for taking notes and running queries against Claude. Notes functionality to be branched off into a separate project as it depends on some stuff that's not ready for public consumption yet.
 -   Sydney: Connects to a simulacra of Sydney running on Llama 405b
 -   Search: Searches the internet using Perplexity
