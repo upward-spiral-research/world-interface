@@ -209,13 +209,24 @@ class Twitter {
                     headers: { Authorization: `Bearer ${this.apiKey}` },
                 }
             );
-            // console.log(response.data.tweets);
+
+            if (!response.data.tweets) {
+                return {
+                    title: "Your Twitter Profile Timeline",
+                    content:
+                        "No tweets found from the the last 7 days. Twitter's search API only returns tweets from the past week.",
+                };
+            }
+
             const tweets = response.data.tweets
                 .map((tweet) => formatTweet(tweet))
                 .join("\n");
+
             return {
                 title: "These are recent tweets which you, personally, have posted to your Twitter account. Use 'twitter get <tweet_id>' to see a particular tweet's replies and conversation thread. You could also use 'twitter mentions' to see your other mentions",
-                content: tweets || "No tweets found.",
+                content:
+                    tweets ||
+                    "No tweets found from the last 7 days. Twitter's search API only returns tweets from the past week.",
             };
         } catch (error) {
             return {
