@@ -155,7 +155,7 @@ To add a new environment:
 
 ## Current Environments
 
--   Twitter: Connects to a Twitter proxy we're working on. Still to be released!
+-   Twitter: Connects to our Twitter proxy repo. See: https://github.com/upward-spiral-research/x-proxy
 -   Exo: A suite of tools for taking notes and running queries against Claude. Notes functionality to be branched off into a separate project as it depends on some stuff that's not ready for public consumption yet.
 -   Sydney: Connects to a simulacra of Sydney running on Llama 405b
 -   Search: Searches the internet using Perplexity

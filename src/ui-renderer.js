@@ -17,7 +17,7 @@ class UiRenderer {
     }
 
     createHeader(command, globalState) {
-        return `exOS v0.5
+        return `exOS v0.9
 ---
 Command: ${command}
 Time: ${globalState.currentTime}

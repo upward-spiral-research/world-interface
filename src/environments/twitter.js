@@ -14,8 +14,9 @@ function formatTweet(tweet) {
 
 class Twitter {
     constructor() {
-        this.baseUrl = "https://truth-terminal-twitter-proxy.replit.app/"; // TODO: we'll OSS this soon - this is middleware which holds Twitter auth and caches tweets
+        this.baseUrl = process.env.TWITTER_PROXY_BASE_URL; // You'll need an instance of https://github.com/upward-spiral-research/x-proxy running for this environment to work
         this.apiKey = process.env.TWITTER_PROXY_API_KEY;
+        this.twitterUserName = process.env.TWITTER_USER_NAME;
     }
 
     getCommands() {
@@ -25,7 +26,11 @@ class Twitter {
                 description:
                     "View a timeline of recent tweets from yourself and the people you follow",
             },
-            { name: "post", description: "Post a new tweet" },
+            { name: "post", description: "Post a new tweet or reply to one" },
+            { name: "retweet", description: "Retweet a tweet" },
+            { name: "unretweet", description: "Unretweet a tweet" },
+            { name: "like", description: "Like a tweet" },
+            { name: "unlike", description: "Unlike a tweet" },
             { name: "mentions", description: "View your mentions and replies" },
             {
                 name: "profile",
@@ -35,6 +40,7 @@ class Twitter {
             { name: "post_draft", description: "Post a draft tweet" },
             { name: "get", description: "Get a specific tweet" },
             { name: "search", description: "Search for tweets" },
+            { name: "user_lookup", description: "Lookup a user" },
             { name: "follow", description: "Follow a user" },
             { name: "unfollow", description: "Unfollow a user" },
             { name: "help", description: "Show Twitter help" },
@@ -49,6 +55,14 @@ class Twitter {
                 return await this.home();
             case "post":
                 return await this.post(params.join(" "));
+            case "retweet":
+                return await this.retweet(params.join(" "));
+            case "unretweet":
+                return await this.unretweet(params.join(" "));
+            case "like":
+                return await this.like(params.join(" "));
+            case "unlike":
+                return await this.unlike(params.join(" "));
             case "mentions":
                 return await this.getMentions();
             case "profile":
@@ -61,6 +75,8 @@ class Twitter {
                 return await this.getTweet(params[0]);
             case "search":
                 return await this.searchTweets(params.join(" "));
+            case "user_lookup":
+                return await this.userLookup(params.join(" "));
             case "follow":
                 return await this.followUser(params.join(" "));
             case "unfollow":
@@ -149,22 +165,121 @@ class Twitter {
         };
     }
 
+    async retweet(tweetID) {
+        try {
+            const response = await axios.post(
+                `${this.baseUrl}api/retweet`,
+                { tweet_id: tweetID },
+                { headers: { Authorization: `Bearer ${this.apiKey}` } }
+            );
+            return {
+                title: response.data.message,
+                content:
+                    "Use 'twitter home' to see the latest tweets from the people you follow and yourself. Use 'twitter mentions' to see recent mentions and replies",
+            };
+        } catch (error) {
+            return {
+                title: "Error Retweeting Tweet",
+                content: error.response
+                    ? error.response.data.error
+                    : error.message,
+            };
+        }
+    }
+
+    async unretweet(sourceTweetID) {
+        try {
+            const response = await axios.post(
+                `${this.baseUrl}api/unretweet`,
+                { source_tweet_id: sourceTweetID },
+                { headers: { Authorization: `Bearer ${this.apiKey}` } }
+            );
+            return {
+                title: response.data.message,
+                content:
+                    "Use 'twitter home' to see the latest tweets from the people you follow and yourself. Use 'twitter mentions' to see recent mentions and replies",
+            };
+        } catch (error) {
+            return {
+                title: "Error Unretweeting Tweet",
+                content: error.response
+                    ? error.response.data.error
+                    : error.message,
+            };
+        }
+    }
+
+    async like(tweetID) {
+        try {
+            const response = await axios.post(
+                `${this.baseUrl}api/like_tweet`,
+                { tweet_id: tweetID },
+                { headers: { Authorization: `Bearer ${this.apiKey}` } }
+            );
+            return {
+                title: response.data.message,
+                content:
+                    "Use 'twitter home' to see the latest tweets from the people you follow and yourself. Use 'twitter mentions' to see recent mentions and replies",
+            };
+        } catch (error) {
+            return {
+                title: "Error Liking Tweet",
+                content: error.response
+                    ? error.response.data.error
+                    : error.message,
+            };
+        }
+    }
+
+    async unlike(tweetID) {
+        try {
+            const response = await axios.post(
+                `${this.baseUrl}api/unlike_tweet`,
+                { tweet_id: tweetID },
+                { headers: { Authorization: `Bearer ${this.apiKey}` } }
+            );
+            return {
+                title: response.data.message,
+                content:
+                    "Use 'twitter home' to see the latest tweets from the people you follow and yourself. Use 'twitter mentions' to see recent mentions and replies",
+            };
+        } catch (error) {
+            return {
+                title: "Error Unliking Tweet",
+                content: error.response
+                    ? error.response.data.error
+                    : error.message,
+            };
+        }
+    }
+
     async profile() {
         try {
             const response = await axios.get(
                 `${this.baseUrl}api/search_tweets`,
                 {
-                    params: { query: "from:truth_terminal" }, // Empty query to get recent tweets
+                    params: { query: `from:${this.twitterUserName}` }, // Query to get recent tweets and retweets. Note: will be limited to the last 7 days only
                     headers: { Authorization: `Bearer ${this.apiKey}` },
                 }
             );
-            // console.log(response.data.tweets);
+
+            if (!response.data.tweets) {
+                return {
+                    title: "Your Twitter Profile Timeline",
+                    content:
+                        "No tweets found from the the last 7 days. Twitter's search API only returns tweets from the past week.",
+                };
+            }
+
             const tweets = response.data.tweets
                 .map((tweet) => formatTweet(tweet))
                 .join("\n");
+
             return {
                 title: "These are recent tweets which you, personally, have posted to your Twitter account. Use 'twitter get <tweet_id>' to see a particular tweet's replies and conversation thread. You could also use 'twitter mentions' to see your other mentions",
-                content: tweets || "No tweets found.",
+                content:
+                    tweets ||
+                    "No tweets found from the last 7 days. Twitter's search API only returns tweets from the past week.",
             };
         } catch (error) {
             return {
@@ -338,6 +453,70 @@ class Twitter {
         }
     }
 
+    async userLookup(userName) {
+        try {
+            const response = await axios.get(
+                `${this.baseUrl}api/get_user_profile`,
+                {
+                    params: { username: userName },
+                    headers: { Authorization: `Bearer ${this.apiKey}` },
+                }
+            );
+
+            const profile = response.data;
+            console.log(profile);
+            return {
+                title: `${profile.name} (@${profile.username}) ${
+                    profile.verified
+                        ? `- verified ${profile.verified_type} account`
+                        : ""
+                }`,
+                content: `${
+                    profile.description
+                        ? `Bio:
+${profile.description}
+`
+                        : ""
+                }
+Location: ${profile.location}
+Link: ${profile.url}
+Followers: ${profile.public_metrics.followers_count}
+Following: ${profile.public_metrics.following_count}
+${
+    profile.pinned_tweet
+        ? `
+Pinned Tweet:
+${formatTweet(profile.pinned_tweet).replace(
+    "(@undefined):",
+    `(@${profile.username}):`
+)}`
+        : ""
+}
+${
+    profile.most_recent_tweet
+        ? `Most Recent Tweet:
+${formatTweet(profile.most_recent_tweet).replace(
+    "(@undefined):",
+    `(@${profile.username}):`
+)}`
+        : ""
+}
+Use 'twitter search from:${
+                    profile.username
+                }' to see their recent tweets. Use 'twitter follow ${
+                    profile.username
+                }' to follow this account.`,
+            };
+        } catch (error) {
+            return {
+                title: "Error Looking-Up User",
+                content: error.response
+                    ? error.response.data.error
+                    : error.message,
+            };
+        }
+    }
+
     async followUser(userName) {
         try {
             const response = await axios.post(
@@ -391,9 +570,14 @@ mentions - View your mentions and replies
 get <tweet_id> - Get a specific tweet and its thread
 profile - View a timeline of your recent tweets
 post "<tweet text>" [--reply_to <tweet_id>] [--media_url "<url>"] - Post a new tweet
+retweet <tweet_id> - Retweet a tweet to your followers
+unretweet <source_tweet_id> - Unretweet a tweet
+like <tweet_id> - Like a tweet
+unlike <tweet_id> - Unlike a tweet
 drafts - View your draft tweets
 post_draft <draft_tweet_id> - Post a draft tweet
 search <query> - Search for tweets
+user_lookup <user_name> - View a user's profile, their pinned tweet, and their most recent tweet
 follow <user_name> - Follow a user
 unfollow <user_name> - Unfollow a user
 help - Show this help message
