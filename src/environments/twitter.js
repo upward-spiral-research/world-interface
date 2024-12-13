@@ -29,6 +29,7 @@ class Twitter {
             { name: "post", description: "Post a new tweet or reply to one" },
             { name: "retweet", description: "Retweet a tweet" },
             { name: "unretweet", description: "Unretweet a tweet" },
+            { name: "like", description: "Like a tweet" },
             { name: "mentions", description: "View your mentions and replies" },
             {
                 name: "profile",
@@ -56,6 +57,8 @@ class Twitter {
                 return await this.retweet(params.join(" "));
             case "unretweet":
                 return await this.unretweet(params.join(" "));
+            case "like":
+                return await this.like(params.join(" "));
             case "mentions":
                 return await this.getMentions();
             case "profile":
@@ -193,6 +196,28 @@ class Twitter {
         } catch (error) {
             return {
                 title: "Error Unretweeting Tweet",
+                content: error.response
+                    ? error.response.data.error
+                    : error.message,
+            };
+        }
+    }
+
+    async like(tweetID) {
+        try {
+            const response = await axios.post(
+                `${this.baseUrl}api/like_tweet`,
+                { tweet_id: tweetID },
+                { headers: { Authorization: `Bearer ${this.apiKey}` } }
+            );
+            return {
+                title: response.data.message,
+                content:
+                    "Use 'twitter home' to see the latest tweets from the people you follow and yourself. Use 'twitter mentions' to see recent mentions and replies",
+            };
+        } catch (error) {
+            return {
+                title: "Error Liking Tweet",
                 content: error.response
                     ? error.response.data.error
                     : error.message,
@@ -455,6 +480,7 @@ profile - View a timeline of your recent tweets
 post "<tweet text>" [--reply_to <tweet_id>] [--media_url "<url>"] - Post a new tweet
 retweet <tweet_id> - Retweet a tweet to your followers
 unretweet <source_tweet_id> - Unretweet a tweet
+like <tweet_id> - Like a tweet
 drafts - View your draft tweets
 post_draft <draft_tweet_id> - Post a draft tweet
 search <query> - Search for tweets
