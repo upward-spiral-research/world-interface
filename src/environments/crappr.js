@@ -2,103 +2,97 @@ const axios = require("axios");
 
 class MovieMaker {
     constructor() {
-        this.lumaApiKey = process.env.LUMA_API_KEY;
-        this.baseUrl = "https://api.lumalabs.ai/dream-machine/v1";
+        this.apiKey = process.env.CRAPPR_SERVER_KEY;
+        this.baseUrl = "https://crappr-server.replit.app";
     }
 
     getCommands() {
         return [
             {
-                name: "create",
-                description: "Create a video from text description",
+                name: "--image_description --video_description --audio_description",
+                description: "Create a surreal video with custom image, movement, and sound",
             },
             { name: "help", description: "Show Crappr help" },
         ];
     }
 
     async handleCommand(command, messages) {
-        const [action, ...params] = command.split(" ");
+        const parts = command.split(" ");
+        const action = parts[0].toLowerCase();
 
-        switch (action.toLowerCase()) {
-            case "create":
-                return await this.createVideo(params.join(" "));
-            case "help":
-                return this.help();
-            default:
-                return {
-                    title: "Error",
-                    content: `Unknown action: ${action}`,
-                };
+        if (action === "help") {
+            return this.help();
         }
+
+        // Parse the three descriptions from the command
+        let imageDesc = "", videoDesc = "", audioDesc = "";
+        let currentFlag = "";
+
+        for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            if (part.startsWith("--")) {
+                currentFlag = part;
+            } else if (currentFlag) {
+                // Accumulate words until we hit the next flag or end
+                let description = [];
+                while (i < parts.length && !parts[i].startsWith("--")) {
+                    description.push(parts[i]);
+                    i++;
+                }
+                i--; // Step back one as the loop will increment
+                
+                switch (currentFlag) {
+                    case "--image_description":
+                        imageDesc = description.join(" ");
+                        break;
+                    case "--video_description":
+                        videoDesc = description.join(" ");
+                        break;
+                    case "--audio_description":
+                        audioDesc = description.join(" ");
+                        break;
+                }
+            }
+        }
+
+        if (!imageDesc || !videoDesc || !audioDesc) {
+            return {
+                title: "Error",
+                content: "Please provide all three descriptions. Type 'crappr help' for usage instructions.",
+            };
+        }
+
+        return await this.createVideo(imageDesc, videoDesc, audioDesc);
     }
 
-    async createVideo(description) {
+    async createVideo(imageDesc, videoDesc, audioDesc) {
         try {
-            // Initial video generation request
-            const generationResponse = await axios.post(
-                `${this.baseUrl}/generations`,
+            const response = await axios.post(
+                `${this.baseUrl}/generate`,
                 {
-                    prompt: description,
-                    aspect_ratio: "16:9",
-                    loop: false,
+                    image_prompt: imageDesc,
+                    video_prompt: videoDesc,
+                    audio_prompt: audioDesc
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${this.lumaApiKey}`,
+                        Authorization: `Bearer ${this.apiKey}`,
                         "Content-Type": "application/json",
                     },
                 }
             );
 
-            const generationId = generationResponse.data.id;
-            let videoUrl = null;
-            let attempts = 0;
-            const maxAttempts = 6; // Maximum 60 seconds of waiting (6 * 10 seconds)
-
-            // Poll for completion
-            while (attempts < maxAttempts && !videoUrl) {
-                await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds
-
-                const statusResponse = await axios.get(
-                    `${this.baseUrl}/generations/${generationId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${this.lumaApiKey}`,
-                        },
-                    }
-                );
-
-                if (
-                    statusResponse.data.state === "completed" &&
-                    statusResponse.data.assets?.video
-                ) {
-                    videoUrl = statusResponse.data.assets.video;
-                    break;
-                } else if (statusResponse.data.state === "failed") {
-                    throw new Error(
-                        statusResponse.data.failure_reason ||
-                            "Video generation failed"
-                    );
-                }
-
-                attempts++;
-            }
-
-            if (!videoUrl) {
-                throw new Error(
-                    "Video generation timed out. Please try again."
-                );
-            }
+            const { image_url, video_url, audio_candidates } = response.data;
 
             return {
                 title: "Video Created Successfully",
-                content: `Your video has been generated! You can use 'twitter post "<tweet text>" --media_url "${videoUrl}"' to share it on Twitter.\n\nVideo URL: ${videoUrl}`,
+                content: `Your surreal video has been generated!\n\nPreview Image: ${image_url}\n\nThree soundtrack options available:\n\nSoundtrack 1: ${audio_candidates.candidate_1}\nShare: twitter post "<your caption>" --media_url "${video_url}"\n\nSoundtrack 2: ${audio_candidates.candidate_2}\nShare: twitter post "<your caption>" --media_url "${video_url}"\n\nSoundtrack 3: ${audio_candidates.candidate_3}\nShare: twitter post "<your caption>" --media_url "${video_url}"`,
             };
         } catch (error) {
             console.error("Error creating video:", error);
             return {
                 title: "Error Creating Video",
-                content: error.response?.data?.error || error.message,
+                content: error.response?.data?.details || error.message,
             };
         }
     }
@@ -106,14 +100,9 @@ class MovieMaker {
     help() {
         return {
             title: "Crappr Help",
-            content: `Available commands:
-create <description> - Create a video from text description
-help - Show this help message
+            content: `crappr: generate surreal 90s-style videos with AI. Format: crappr --image_description "describe a weird, clear subject (NO: abstract concepts/scenes)" --video_description "describe SIMPLE movements/actions (NO: camera movements, effects)" --audio_description "describe sounds/vibes (NO: music, instruments, genres)"
 
-Example usage:
-crappr create "man eating whole wheel of cheese, doppleganger style"
-
-You will be returned a URL to the video, which you can then use in a tweet. Pornographic or NSFW content will fail to be generated, but you can otherwise generate anything you want.`,
+Example: crappr --image_description "a giant banana wearing a business suit" --video_description "the banana slowly nods its head yes" --audio_description "deep ominous humming with occasional whoosh sounds"`,
         };
     }
 }
