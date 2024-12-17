@@ -3,7 +3,7 @@ const axios = require("axios");
 class MovieMaker {
     constructor() {
         this.apiKey = process.env.CRAPPR_SERVER_KEY;
-        this.baseUrl = "https://crappr-server.replit.app";
+        this.baseUrl = process.env.CRAPPR_SERVER_URL; /* Can be deployed anywhere that supports ExpressJS - replit is good for prototypes */
     }
 
     getCommands() {
