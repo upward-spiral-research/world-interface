@@ -6,10 +6,12 @@ const Sydney = require("./environments/sydney");
 const WebBrowser = require("./environments/web_browser");
 const Crappr = require("./environments/crappr");
 const Trippr = require("./environments/trippr");
+const Wiki = require("./environments/wiki");
 
 class EnvironmentRegistry {
     constructor() {
         this.environments = {
+            wiki: new Wiki(),
             twitter: new Twitter(),
             exo: new Exo(),
             meme: new MemeMagic(),
