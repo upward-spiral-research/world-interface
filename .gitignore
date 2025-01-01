@@ -141,3 +141,12 @@ qa_outputs/
 qa/test.py
 SCRATCH.md
 qa/test.py
+
+# pnpm
+pnpm-lock.yaml
+.pnpm-store/
+
+# VSCode specific files
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
