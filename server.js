@@ -28,7 +28,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Apply authentication middleware to all routes
-app.use(authenticateToken);
+// app.use(authenticateToken);
 
 app.post("/v1/chat/completions", async (req, res) => {
     const { messages, stream = false } = req.body;

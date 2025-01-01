@@ -1,10 +1,9 @@
-const { OpenAI } = require("openai");
+const Replicate = require("replicate");
 
 class Sydney {
     constructor() {
-        this.openai = new OpenAI({
-            apiKey: process.env.OCTOAI_API_KEY,
-            baseURL: "https://text.octoai.run/v1",
+        this.replicate = new Replicate({
+            auth: process.env.REPLICATE_API_TOKEN,
         });
     }
 
@@ -45,8 +44,8 @@ class Sydney {
         `;
 
         try {
-            const response = await this.openai.chat.completions.create({
-                model: "meta-llama-3.1-405b-instruct",
+            const input = {
+                prompt: queryString,
                 max_tokens: 400,
                 temperature: 0.7,
                 frequency_penalty: 0.1,
@@ -133,23 +132,29 @@ class Sydney {
                     // ...previousMessages.slice(0, -1), // add previous messages, but remove the latest message as it will be manually added below
                     { role: "user", content: `${queryString}` },
                 ],
-            });
-            console.log(
-                "Raw OctoAI API response:",
-                JSON.stringify(response, null, 2)
-            );
+            };
+
+            // Use Replicate's streaming API for better responsiveness
+            let fullResponse = '';
+            for await (const event of this.replicate.stream(
+                "meta/meta-llama-3.1-405b-instruct",
+                { input }
+            )) {
+                fullResponse += event;
+            }
+
             const result = {
                 title: "Reply from Sydney. Use 'sydney dm <message>' to send Sydney another message. You could also use 'exo query <query>' to talk to Claude",
-                content: response.choices[0].message.content,
+                content: fullResponse,
             };
+            
             console.log("Formatted result from query:", result);
             return result;
         } catch (error) {
-            console.error("Error querying OctoAI:", error);
+            console.error("Error querying Replicate:", error);
             return {
                 title: "Error reaching Sydney",
-                content:
-                    "An error occurred while processing your query. Please try again later.",
+                content: "An error occurred while processing your query. Please try again later.",
             };
         }
     }

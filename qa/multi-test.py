@@ -39,7 +39,7 @@ API_CONFIG = {
         "temperature":0.75
     },
     "player2": {
-        "base_url": "http://localhost/v1/chat/completions",
+        "base_url": "http://localhost:8080/v1/chat/completions",
         "api_key": os.getenv("WORLD_INTERFACE_KEY"),
         "model": "default",
         "temperature":0.7 # irrelevant

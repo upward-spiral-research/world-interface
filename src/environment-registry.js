@@ -11,15 +11,15 @@ const Wiki = require("./environments/wiki");
 class EnvironmentRegistry {
     constructor() {
         this.environments = {
-            wiki: new Wiki(),
+            // wiki: new Wiki(),
             twitter: new Twitter(),
             exo: new Exo(),
-            meme: new MemeMagic(),
+            // meme: new MemeMagic(),
             search: new Search(),
             sydney: new Sydney(),
             web: new WebBrowser(),
-            crappr: new Crappr(),
-            trippr: new Trippr(),
+            // crappr: new Crappr(),
+            // trippr: new Trippr(),
         };
     }
 

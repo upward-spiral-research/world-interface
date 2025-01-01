@@ -1,9 +1,7 @@
 // src/middleware/command-preprocessor.js
-const axios = require("axios");
+const Replicate = require("replicate");
 
 async function preprocessCommand(command, availableCommands, messages) {
-    // console.log("Available commands:", availableCommands);
-
     // Check if the command is valid
     const isValidCommand = checkValidCommand(command, availableCommands);
 
@@ -11,7 +9,7 @@ async function preprocessCommand(command, availableCommands, messages) {
         return { processedCommand: command, helpText: null };
     }
 
-    // If the command is invalid, use OctoAI to correct it
+    // If the command is invalid, use Replicate to correct it
     const correctedCommand = await correctCommandWithLLM(
         command,
         availableCommands,
@@ -59,49 +57,44 @@ function checkValidCommand(command, availableCommands) {
 }
 
 async function correctCommandWithLLM(command, availableCommands, messages) {
-    const baseUrl = "https://text.octoai.run/v1/chat/completions";
-    const apiKey = process.env.OCTOAI_API_KEY;
+    const replicate = new Replicate({
+        auth: process.env.REPLICATE_API_TOKEN,
+    });
 
-    const promptMessages = [
-        {
-            role: "system",
-            content: `You are a command preprocessor for an OS simulator. Available commands: ${JSON.stringify(
-                availableCommands
-            )}. Your task is to correct invalid commands and provide helpful feedback. If a command is missing its environment prefix (e.g., 'timeline' instead of 'twitter timeline'), add the correct prefix. If the syntax is incorrect, take your best guess at correcting it, e.g. meme_magic --input 'a hot pickle' might become meme generate --image_desc 'a hot pickle'. Always return your response in the format: {"processedCommand": "corrected command", "helpText": "explanation"}`,
-        },
-        ...messages.slice(-5), // Include the last 5 messages for extra context
-        {
-            role: "user",
-            content: `The user entered: "${command}". If this is not a valid command or if it's missing its environment prefix, please correct it and provide a brief explanation.`,
-        },
-    ];
+    const systemPrompt = `You are a command preprocessor for an OS simulator. Available commands: ${JSON.stringify(
+        availableCommands
+    )}. Your task is to correct invalid commands and provide helpful feedback. If a command is missing its environment prefix (e.g., 'timeline' instead of 'twitter timeline'), add the correct prefix. If the syntax is incorrect, take your best guess at correcting it, e.g. meme_magic --input 'a hot pickle' might become meme generate --image_desc 'a hot pickle'. Always return your response in the format: {"processedCommand": "corrected command", "helpText": "explanation"}`;
+
+    const input = {
+        prompt: `The user entered: "${command}". If this is not a valid command or if it's missing its environment prefix, please correct it and provide a brief explanation.`,
+        max_tokens: 200,
+        temperature: 0,
+        system: systemPrompt,
+        messages: [
+            ...messages.slice(-5), // Include the last 5 messages for context
+            { role: "user", content: command }
+        ]
+    };
 
     try {
-        const response = await axios.post(
-            baseUrl,
-            {
-                model: "meta-llama-3.1-405b-instruct",
-                messages: promptMessages,
-                temperature: 0,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+        let fullResponse = '';
+        for await (const event of replicate.stream(
+            "meta/meta-llama-3.1-405b-instruct",
+            { input }
+        )) {
+            fullResponse += event;
+        }
 
-        const assistantResponse = response.data.choices[0].message.content;
-        // console.log("LLM PREPROCESSOR RESPONSE", assistantResponse);
-        const parsedResponse = JSON.parse(assistantResponse);
+        console.log({ availableCommands: JSON.stringify(availableCommands), userCommand: command, fullResponse });
+
+        const parsedResponse = JSON.parse(fullResponse);
 
         return {
             processedCommand: parsedResponse.processedCommand,
             helpText: parsedResponse.helpText,
         };
     } catch (error) {
-        console.error("Error calling OctoAI:", error);
+        console.error("Error calling Replicate:", error);
         return {
             processedCommand: command,
             helpText: "Unable to process command. Please try again.",
