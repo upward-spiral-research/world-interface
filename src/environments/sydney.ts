@@ -45,6 +45,7 @@ export class Sydney {
         return {
           title: 'Error',
           content: `Unknown action: ${action}`,
+          error: `Unknown action: ${action}`,
         };
     }
   }

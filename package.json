@@ -9,7 +9,8 @@
     "build": "tsc",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test:user": "ts-node qa/userMultiTest.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.25.0",

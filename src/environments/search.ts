@@ -39,6 +39,7 @@ export class Search {
         return {
           title: 'Error',
           content: `Unknown action: ${action}`,
+          error: `Unknown action: ${action}`,
         };
     }
   }

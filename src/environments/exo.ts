@@ -5,6 +5,7 @@ import axios from 'axios';
 interface ExoResponse {
   title: string;
   content: string;
+  error?: string;
 }
 
 interface Note {
@@ -77,6 +78,7 @@ export class Exo {
         return {
           title: 'Error',
           content: `Unknown action: ${action}`,
+          error: `Unknown action: ${action}`,
         };
     }
   }

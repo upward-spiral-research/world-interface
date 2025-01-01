@@ -27,6 +27,7 @@ interface PostCommandParams {
 interface TwitterResponse {
   title: string;
   content: string;
+  error?: string;
 }
 
 interface Draft {
@@ -132,6 +133,7 @@ export class Twitter {
         return {
           title: `Error:`,
           content: `Command ${action} not recognized.`,
+          error: `Command ${action} not recognized.`,
         };
     }
   }

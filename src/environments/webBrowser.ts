@@ -16,8 +16,10 @@ interface ApiResponse {
 }
 
 interface CommandResponse {
-  title?: string;
-  content?: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  tweet?: string;
   error?: string;
 }
 
@@ -49,7 +51,10 @@ export class WebBrowser {
       case 'help':
         return this.help();
       default:
-        return { error: `Unknown action: ${action}` };
+        return {
+          title: 'Error',
+          content: `Unknown action: ${action}`,
+        };
     }
   }
 
@@ -80,7 +85,11 @@ export class WebBrowser {
       }
     } catch (error) {
       console.error('Error opening link:', error);
-      return { error: 'Failed to open the link' };
+      return {
+        title: 'Error',
+        content: `Error opening link: ${error}`,
+        error: `Error opening link: ${error}`,
+      };
     }
   }
 
